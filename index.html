@@ -374,6 +374,14 @@ async function loadQuestions(){
 // ─────────────────────────────────────────────────────────────────
 
 const params = new URLSearchParams(window.location.search);
+// 🔐 Secret link protection
+const key = params.get("key");
+
+if (key !== "TK2026") {
+  document.body.innerHTML = "<h2 style='font-family:sans-serif;text-align:center;margin-top:50px;'>Access denied</h2>";
+  throw new Error("Unauthorized access");
+}
+``
 let presetName = params.get('name') || '';
 
 function hashStr(s){
@@ -439,24 +447,27 @@ function escapeHtml(s){
   return d.innerHTML;
 }
 
-async function logResult(name, q, chosenIdx, isCorrect){
-  try{
-    const key = 'result:' + name.trim().toLowerCase() + ':' + q.id;
-    await window.storage.set(key, JSON.stringify({
-      name: name.trim(),
-      questionId: q.id,
-      section: q.section,
-      question: q.question,
-      chosen: q.options[chosenIdx],
-      correctAnswer: q.options[q.correct],
-      isCorrect,
-      timestamp: new Date().toISOString()
-    }), true);
-  }catch(e){
-    console.error('Could not log result', e);
+
+async function logResult(name, q, chosenIdx, isCorrect) {
+  try {
+    await fetch("https://script.google.com/macros/s/AKfycbwfmiP6_bZ4lOWDw5pRdIYYeVc2iWccmNxkcWJuZ3KWgszxq1CWved4IycEAVT-Munf3w/exec", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: name,
+        question: q.question,
+        chosen: q.options[chosenIdx],
+        correct: q.options[q.correct],
+        isCorrect: isCorrect,
+        timestamp: new Date().toISOString()
+      })
+    });
+  } catch (e) {
+    console.error("Failed to send data to sheet", e);
   }
 }
-
 function renderGate(){
   app.innerHTML = `
     ${renderMasthead('')}
@@ -469,8 +480,30 @@ function renderGate(){
   `;
   const input = document.getElementById('nameInput');
   const btn = document.getElementById('startBtn');
-  const go = () => {
-    const v = input.value.trim();
+const allowedUsers = [
+  "Simi",
+  "Charlie",
+  "Rod",
+  "Aaron",
+  "Tom",
+  "Eric",
+  "Steph",
+  "Sabrina",
+  "Harry",
+  "Lachlan"
+];
+
+const go = () => {
+  const v = input.value.trim();
+
+  if (!allowedUsers.includes(v)) {
+    alert("You are not authorised to access this quiz.");
+    return;
+  }
+
+  presetName = v;
+  renderQuestion(presetName);
+};
     if(!v) { input.focus(); return; }
     presetName = v;
     renderQuestion(presetName);
@@ -583,6 +616,9 @@ async function init(){
 
 init();
 </script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.1.0/iconfont/tabler-icons.min.css">
+</body>
+</html>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.1.0/iconfont/tabler-icons.min.css">
 </body>
 </html>
