@@ -373,14 +373,14 @@ async function loadQuestions(){
 }
 // ─────────────────────────────────────────────────────────────────
 
-const params = new URLSearchParams(window.location.search);
-// 🔐 Secret link protection
+
 const key = params.get("key");
 
 if (key !== "TK2026") {
   document.body.innerHTML = "<h2 style='font-family:sans-serif;text-align:center;margin-top:50px;'>Access denied</h2>";
   throw new Error("Unauthorized access");
 }
+
 ``
 let presetName = params.get('name') || '';
 
