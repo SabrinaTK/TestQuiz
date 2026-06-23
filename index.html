@@ -584,7 +584,7 @@ async function renderQuestion(name){
       }
       fbBody.textContent = q.explanation;
 
-      await logResult(name, q, chosenIdx, isCorrect);
+      logResult(name, q, chosenIdx, isCorrect); // fire and forget — don't block on this
       await markQuestionSeen(name, q.id);
 
       setTimeout(() => renderDone(name, isCorrect), 1400);
